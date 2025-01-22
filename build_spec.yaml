@@ -29,18 +29,18 @@ steps:
     name: "Build Frontend Container Image"
     timeoutInSeconds: 3600
     command: |
-      cd frontend
-      docker build --pull --rm -t kmlbroker:$BUILDRUN_HASH . || { echo "Frontend build failed"; exit 1; }
-      cd ..
+      docker tag kmlbroker:${BUILDRUN_HASH} ghcr.io/nrcbpbtrtyz0/kmlbroker:1.0
+      echo ${{ secrets.GITHUB_PAT }} | docker login ghcr.io -u mlsysadmin --password-stdin
+      docker push ghcr.io/nrcbpbtrtyz0/kmlbroker:1.0
 
 
   - type: Command
     name: "Build Backend Container Image"
     timeoutInSeconds: 3600
     command: |
-      cd backend
-      docker build --pull --rm -t kmlbrokerbe:$BUILDRUN_HASH . || { echo "Backend build failed"; exit 1; }
-      cd ..
+      docker tag kmlbrokerbe:${BUILDRUN_HASH} ghcr.io/nrcbpbtrtyz0/kmlbrokerbe:1.0
+      echo ${{ secrets.GITHUB_PAT }} | docker login ghcr.io -u mlsysadmin --password-stdin
+      docker push ghcr.io/nrcbpbtrtyz0/kmlbrokerbe:1.0
 
 
 outputArtifacts:

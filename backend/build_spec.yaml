@@ -3,10 +3,10 @@ component: build
 timeoutInSeconds: 6000
 runAs: root
 shell: bash
-
 env:
   variables:
-    GITHUB_PAT: "${{ secrets.GITHUB_PAT }}"  # Corrected secret handling
+    key: "value"
+
   exportedVariables:
     - BUILDRUN_HASH
 
@@ -15,8 +15,8 @@ steps:
     name: "Define Tagging"
     timeoutInSeconds: 60
     command: |
-      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
-      echo "BUILDRUN_HASH: " $BUILDRUN_HASH
+          export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
+          echo "BUILDRUN_HASH: " $BUILDRUN_HASH
 
     onFailure:
       - type: Command
@@ -24,33 +24,29 @@ steps:
           echo "Handling Failure in Frontend Build"
         timeoutInSeconds: 1200
         runAs: root                 
-
-  - type: Command
-    name: "Login to GitHub Container Registry"
-    timeoutInSeconds: 60
-    command: |
-      echo "$GITHUB_PAT" | docker login ghcr.io -u mlsysadmin --password-stdin
-
+      
   - type: Command
     name: "Build Frontend Container Image"
     timeoutInSeconds: 3600
     command: |
-      docker build -t kmlbroker:${BUILDRUN_HASH} .
-      docker tag kmlbroker:${BUILDRUN_HASH} ghcr.io/nrcbpbtrtyz0/kmlbroker:1.0
-      docker push ghcr.io/nrcbpbtrtyz0/kmlbroker:1.0
+      cd frontend
+      docker build --pull --rm -t kmlbroker:$BUILDRUN_HASH . || { echo "Frontend build failed"; exit 1; }
+      cd ..
+
 
   - type: Command
     name: "Build Backend Container Image"
     timeoutInSeconds: 3600
     command: |
-      docker build -t kmlbrokerbe:${BUILDRUN_HASH} .
-      docker tag kmlbrokerbe:${BUILDRUN_HASH} ghcr.io/nrcbpbtrtyz0/kmlbrokerbe:1.0
-      docker push ghcr.io/nrcbpbtrtyz0/kmlbrokerbe:1.0
+      cd backend
+      docker build --pull --rm -t kmlbrokerbe:$BUILDRUN_HASH . || { echo "Backend build failed"; exit 1; }
+      cd ..
+
 
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE
-    location: ghcr.io/nrcbpbtrtyz0/kmlbroker:1.0
+    location: kmlbroker:${BUILDRUN_HASH}
   - name: backendImage
     type: DOCKER_IMAGE
-    location: ghcr.io/nrcbpbtrtyz0/kmlbrokerbe:1.0
+    location: kmlbrokerbe:${BUILDRUN_HASH}

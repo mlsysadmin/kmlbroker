@@ -1,5 +1,5 @@
 version: 0.1
-component: build  # <-- Add this at the root level
+component: build
 timeoutInSeconds: 6000
 
 steps:
@@ -14,23 +14,7 @@ steps:
     name: "Login to GitHub Container Registry"
     timeoutInSeconds: 60
     command: |
-      version: 0.1
-component: build  # <-- Add this at the root level
-timeoutInSeconds: 6000
-
-steps:
-  - type: Command
-    name: "Define Tagging"
-    timeoutInSeconds: 60
-    command: |
-      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
-      echo "BUILDRUN_HASH: " $BUILDRUN_HASH
-
-  - type: Command
-    name: "Login to GitHub Container Registry"
-    timeoutInSeconds: 60
-    command: |
-      echo "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" | docker login ghcr.io -u "mlsysadmin" --password-stdin
+      echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "mlsysadmin" --password-stdin
     env:
       - name: GHCR_PAT
         valueFrom: "GHCR_PAT_SECRET"
@@ -50,34 +34,15 @@ steps:
       cd backend
       docker build --pull --rm -t kmlbrokerbe:latest . || { echo "Backend build failed"; exit 1; }
       cd ..
-      
-outputArtifacts:
-  - name: frontendImage
-    type: DOCKER_IMAGE
-    location: kmlbroker:${BUILDRUN_HASH}
-  - name: backendImage
-    type: DOCKER_IMAGE
-    location: kmlbrokerbe:${BUILDRUN_HASH}
-    env:
-      - name: GHCR_PAT
-        valueFrom: "GHCR_PAT_SECRET"
 
   - type: Command
-    name: "Build Frontend Container Image"
-    timeoutInSeconds: 3600
+    name: "Debug Docker Authentication"
+    timeoutInSeconds: 120
     command: |
-      cd frontend
-      docker build --pull --rm -t kmlbroker:$BUILDRUN_HASH . || { echo "Frontend build failed"; exit 1; }
-      cd ..
+      echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "mlsysadmin" --password-stdin || echo "LOGIN FAILED"
+      docker push ghcr.io/nrcbpbtrtyz0/kmlbroker:latest || echo "PUSH FAILED"
+      docker logout ghcr.io
 
-  - type: Command
-    name: "Build Backend Container Image"
-    timeoutInSeconds: 3600
-    command: |
-      cd backend
-      docker build --pull --rm -t kmlbrokerbe:$BUILDRUN_HASH . || { echo "Backend build failed"; exit 1; }
-      cd ..
-      
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE

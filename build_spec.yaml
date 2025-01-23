@@ -34,6 +34,7 @@ steps:
       cd backend
       docker build --pull --rm -t kmlbrokerbe:$BUILDRUN_HASH . || { echo "Backend build failed"; exit 1; }
       cd ..
+      
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE

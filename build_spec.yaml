@@ -14,7 +14,7 @@ steps:
     name: "Login to GitHub Container Registry"
     timeoutInSeconds: 60
     command: |
-      echo "${GHCR_PAT}" | docker login ghcr.io -u "mlsysadmin" --password-stdin
+      echo "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" | docker login ghcr.io -u "mlsysadmin" --password-stdin
     env:
       - name: GHCR_PAT
         valueFrom: "GHCR_PAT_SECRET"

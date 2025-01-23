@@ -24,7 +24,7 @@ steps:
     timeoutInSeconds: 3600
     command: |
       cd frontend
-      docker build --pull --rm -t kmlbroker:$BUILDRUN_HASH . || { echo "Frontend build failed"; exit 1; }
+      docker build --pull --rm -t kmlbroker:latest . || { echo "Frontend build failed"; exit 1; }
       cd ..
 
   - type: Command
@@ -32,7 +32,7 @@ steps:
     timeoutInSeconds: 3600
     command: |
       cd backend
-      docker build --pull --rm -t kmlbrokerbe:$BUILDRUN_HASH . || { echo "Backend build failed"; exit 1; }
+      docker build --pull --rm -t kmlbrokerbe:latest . || { echo "Backend build failed"; exit 1; }
       cd ..
       
 outputArtifacts:

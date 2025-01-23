@@ -1,3 +1,7 @@
+version: 0.1
+component: build  # <-- Add this at the root level
+timeoutInSeconds: 6000
+
 steps:
   - type: Command
     name: "Define Tagging"
@@ -6,13 +10,6 @@ steps:
       export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
       echo "BUILDRUN_HASH: " $BUILDRUN_HASH
 
-    onFailure:
-      - type: Command
-        command: |
-          echo "Handling Failure in Frontend Build"
-        timeoutInSeconds: 1200
-        runAs: root
-
   - type: Command
     name: "Login to GitHub Container Registry"
     timeoutInSeconds: 60
@@ -20,7 +17,7 @@ steps:
       echo "${GHCR_PAT}" | docker login ghcr.io -u "<your-github-username>" --password-stdin
     env:
       - name: GHCR_PAT
-        valueFrom: "GHCR_PAT_SECRET"  # This should be an OCI DevOps secret containing your GitHub PAT.
+        valueFrom: "GHCR_PAT_SECRET"
 
   - type: Command
     name: "Build Frontend Container Image"
@@ -37,3 +34,10 @@ steps:
       cd backend
       docker build --pull --rm -t kmlbrokerbe:$BUILDRUN_HASH . || { echo "Backend build failed"; exit 1; }
       cd ..
+outputArtifacts:
+  - name: frontendImage
+    type: DOCKER_IMAGE
+    location: kmlbroker:${BUILDRUN_HASH}
+  - name: backendImage
+    type: DOCKER_IMAGE
+    location: kmlbrokerbe:${BUILDRUN_HASH}

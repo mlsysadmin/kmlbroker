@@ -24,7 +24,7 @@ steps:
     timeoutInSeconds: 3600
     command: |
       cd frontend
-      docker build --pull --rm -t kmlbroker:latest . || { echo "Frontend build failed"; exit 1; }
+      docker build --pull --rm -t kmlbroker:1.0 . || { echo "Frontend build failed"; exit 1; }
       cd ..
 
   - type: Command
@@ -32,13 +32,13 @@ steps:
     timeoutInSeconds: 3600
     command: |
       cd backend
-      docker build --pull --rm -t kmlbrokerbe:latest . || { echo "Backend build failed"; exit 1; }
+      docker build --pull --rm -t kmlbrokerbe:1.0 . || { echo "Backend build failed"; exit 1; }
       cd ..
       
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE
-    location: kmlbroker:latest
+    location: kmlbroker:1.0
   - name: backendImage
     type: DOCKER_IMAGE
-    location: kmlbrokerbe:latest
+    location: kmlbrokerbe:1.0

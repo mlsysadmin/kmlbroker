@@ -81,7 +81,7 @@ outputArtifacts:
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE
-    location: kmlbroker:${BUILDRUN_HASH}
+    location: kmlbroker:latest
   - name: backendImage
     type: DOCKER_IMAGE
-    location: kmlbrokerbe:${BUILDRUN_HASH}
+    location: kmlbrokerbe:latest

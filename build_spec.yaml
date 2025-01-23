@@ -1,5 +1,5 @@
 version: 0.1
-component: build  # <-- Add this at the root level
+component: build
 timeoutInSeconds: 6000
 
 steps:
@@ -14,7 +14,7 @@ steps:
     name: "Login to GitHub Container Registry"
     timeoutInSeconds: 60
     command: |
-    run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "mlsysadmin" --password-stdin
+      echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "mlsysadmin" --password-stdin
     env:
       - name: GHCR_PAT
         valueFrom: "GHCR_PAT_SECRET"
@@ -34,7 +34,15 @@ steps:
       cd backend
       docker build --pull --rm -t kmlbrokerbe:latest . || { echo "Backend build failed"; exit 1; }
       cd ..
-      
+
+  - type: Command
+    name: "Debug Docker Authentication"
+    timeoutInSeconds: 120
+    command: |
+      echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "mlsysadmin" --password-stdin || echo "LOGIN FAILED"
+      docker push ghcr.io/nrcbpbtrtyz0/kmlbroker:latest || echo "PUSH FAILED"
+      docker logout ghcr.io
+
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE

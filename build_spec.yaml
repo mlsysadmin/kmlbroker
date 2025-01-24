@@ -6,7 +6,7 @@ shell: bash
 
 env:
   variables:
-    GITHUB_USERNAME: "your-github-username"
+    GITHUB_USERNAME: "mlsysadmin"
     GITHUB_TOKEN: "${GITHUB_TOKEN}"  # Ensure this is stored in OCI DevOps secrets
   exportedVariables:
     - BUILDRUN_HASH

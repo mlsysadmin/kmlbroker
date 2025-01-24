@@ -33,4 +33,4 @@ steps:
 outputArtifacts:
   - name: backendImage
     type: DOCKER_IMAGE
-    location: kmlbrokerbe:latest
+    location: kmlbrokerbe:1.0

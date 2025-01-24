@@ -4,6 +4,7 @@ timeoutInSeconds: 6000
 runAs: root
 shell: bash
 
+# Exported variables
 exportedVariables:
   - BUILDRUN_HASH
 
@@ -27,10 +28,19 @@ steps:
     timeoutInSeconds: 1200
     name: "Build container image"
     command: |
-      cd ${OCI_WORKSPACE_DIR}/github_OCI-DevOps-Java
+      # Navigate to frontend directory
+      cd ${OCI_WORKSPACE_DIR}/frontend
+      # Build the docker image and tag it uniquely with BUILDRUN_HASH
       docker build --pull --rm -t kmlbrokerbe:${BUILDRUN_HASH} .
 
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE
     location: kmlbrokerbe:${BUILDRUN_HASH}
+
+# Build Source Configuration
+buildSource:
+  type: Git
+  location: https://github.com/mlsysadmin/kmlbroker.git
+  branchName: main
+  buildSpecFilePath: backend/build_spec.yaml  # Path to the frontend's build_spec.yaml

@@ -26,19 +26,6 @@ steps:
         timeoutInSeconds: 1200
         runAs: root
 
-  # Authenticate with GitHub Container Registry (GHCR)
-  - type: Command
-    name: "Authenticate with GHCR"
-    timeoutInSeconds: 60
-    command: |
-      echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "mlsysadmin" --password-stdin
-    onFailure:
-      - type: Command
-        command: |
-          echo "Authentication failed, please check your GITHUB_TOKEN."
-        timeoutInSeconds: 120
-        runAs: root
-
   # Build the Frontend Container Image
   - type: Command
     name: "Build Frontend Container Image"

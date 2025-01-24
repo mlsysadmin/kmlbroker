@@ -31,7 +31,7 @@ steps:
     name: "Authenticate with GHCR"
     timeoutInSeconds: 60
     command: |
-      echo "${GITHUB_TOKEN}" | docker login ghcr.io -u ${GITHUB_USERNAME} --password-stdin
+      echo "${GITHUB_TOKEN}" | docker login ghcr.io -u 'mlsysadmin' --password-stdin
 
   # Build the Frontend Container Image
   - type: Command

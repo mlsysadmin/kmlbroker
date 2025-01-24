@@ -30,7 +30,6 @@ steps:
     command: |
       # Navigate to frontend directory
       cd ${OCI_WORKSPACE_DIR}/frontend
-      # Build the docker image and tag it uniquely with BUILDRUN_HASH
       docker build --pull --rm -t kmlbroker:${BUILDRUN_HASH} .
 
 outputArtifacts:
@@ -43,4 +42,4 @@ buildSource:
   type: Git
   location: https://github.com/mlsysadmin/kmlbroker.git
   branchName: main
-  buildSpecFilePath: frontend/build_spec.yaml  # Path to the frontend's build_spec.yaml
+  buildSpecFilePath: frontend/build_spec.yaml

@@ -44,22 +44,6 @@ steps:
       docker build --pull --rm -t mlbrokerbe:$BUILDRUN_HASH . || { echo "Backend build failed"; exit 1; }
       cd ..
 
-  # Tag and Push Frontend Image to GHCR
-  - type: Command
-    name: "Push Frontend Image to GHCR"
-    timeoutInSeconds: 600
-    command: |
-      docker tag mlbroker:$BUILDRUN_HASH ghcr.io/nrcbpbtrtyz0/kmlbroker:1.0
-      docker push ghcr.io/nrcbpbtrtyz0/kmlbroker:1.0
-
-  # Tag and Push Backend Image to GHCR
-  - type: Command
-    name: "Push Backend Image to GHCR"
-    timeoutInSeconds: 600
-    command: |
-      docker tag mlbrokerbe:$BUILDRUN_HASH ghcr.io/nrcbpbtrtyz0/kmlbrokerbe:1.0
-      docker push ghcr.io/nrcbpbtrtyz0/kmlbrokerbe:1.0
-
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE

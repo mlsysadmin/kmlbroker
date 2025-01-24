@@ -14,10 +14,7 @@ steps:
     name: "Login to GitHub Container Registry"
     timeoutInSeconds: 60
     command: |
-    run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "mlsysadmin" --password-stdin
-    env:
-      - name: GHCR_PAT
-        valueFrom: "GHCR_PAT_SECRET"
+      echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $GITHUB_USERNAME --password-stdin
 
   - type: Command
     name: "Build Frontend Container Image"

@@ -1,5 +1,5 @@
 version: 0.1
-component: build  # <-- Add this at the root level
+component: build  # <-- Root level component
 timeoutInSeconds: 6000
 
 steps:
@@ -11,17 +11,32 @@ steps:
       echo "BUILDRUN_HASH: " $BUILDRUN_HASH
 
   - type: Command
+    name: "Debug Secrets"
+    timeoutInSeconds: 30
+    command: |
+      if [[ -z "$OCIR_AUTH_TOKEN" ]]; then
+        echo "❌ ERROR: OCIR_AUTH_TOKEN is not set or empty!"
+        exit 1
+      else
+        echo "✅ OCIR_AUTH_TOKEN is set."
+      fi
+
+  - type: Command
     name: "Login to GitHub Container Registry"
     timeoutInSeconds: 60
     command: |
-      echo ${{ secrets.OCIR_AUTH_TOKEN }} | docker login ghcr.io -u 'mlsysadmin' --password-stdin
+      echo "$OCIR_AUTH_TOKEN" | docker login ghcr.io -u "mlsysadmin" --password-stdin || { 
+        echo "❌ GitHub Container Registry login failed"; exit 1; 
+      }
 
   - type: Command
     name: "Build Frontend Container Image"
     timeoutInSeconds: 3600
     command: |
       cd frontend
-      docker build --pull --rm -t kmlbroker:1.0 . || { echo "Frontend build failed"; exit 1; }
+      docker build --pull --rm -t kmlbroker:1.0 . || { 
+        echo "❌ Frontend build failed"; exit 1; 
+      }
       cd ..
 
   - type: Command
@@ -29,7 +44,9 @@ steps:
     timeoutInSeconds: 3600
     command: |
       cd backend
-      docker build --pull --rm -t kmlbrokerbe:1.0 . || { echo "Backend build failed"; exit 1; }
+      docker build --pull --rm -t kmlbrokerbe:1.0 . || { 
+        echo "❌ Backend build failed"; exit 1; 
+      }
       cd ..
       
 outputArtifacts:

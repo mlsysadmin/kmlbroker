@@ -1,58 +1,36 @@
 version: 0.1
-component: build  # <-- Root level component
+component: build
 timeoutInSeconds: 6000
+runAs: root
+shell: bash
+
+  exportedVariables:
+    - BUILDRUN_HASH
 
 steps:
   - type: Command
-    name: "Define Tagging"
-    timeoutInSeconds: 60
+    name: "Define unique image tag"
+    timeoutInSeconds: 40
     command: |
-      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
+      export BUILDRUN_HASH=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
       echo "BUILDRUN_HASH: " $BUILDRUN_HASH
 
-  - type: Command
-    name: "Debug Secrets"
-    timeoutInSeconds: 30
-    command: |
-      if [[ -z "$OCIR_AUTH_TOKEN" ]]; then
-        echo "❌ ERROR: OCIR_AUTH_TOKEN is not set or empty!"
-        exit 1
-      else
-        echo "✅ OCIR_AUTH_TOKEN is set."
-      fi
+    onFailure:
+      - type: Command
+        command: |
+          echo "Handling Failure"
+          echo "Failure successfully handled"
+        timeoutInSeconds: 40
+        runAs: root
 
   - type: Command
-    name: "Login to GitHub Container Registry"
-    timeoutInSeconds: 60
+    timeoutInSeconds: 1200
+    name: "Build container image"
     command: |
-      echo "$OCIR_AUTH_TOKEN" | docker login ghcr.io -u "mlsysadmin" --password-stdin || { 
-        echo "❌ GitHub Container Registry login failed"; exit 1; 
-      }
+      cd ${OCI_WORKSPACE_DIR}/github_OCI-DevOps-Java
+      docker build --pull --rm -t kmlbrokerbe .
 
-  - type: Command
-    name: "Build Frontend Container Image"
-    timeoutInSeconds: 3600
-    command: |
-      cd frontend
-      docker build --pull --rm -t kmlbroker:1.0 . || { 
-        echo "❌ Frontend build failed"; exit 1; 
-      }
-      cd ..
-
-  - type: Command
-    name: "Build Backend Container Image"
-    timeoutInSeconds: 3600
-    command: |
-      cd backend
-      docker build --pull --rm -t kmlbrokerbe:1.0 . || { 
-        echo "❌ Backend build failed"; exit 1; 
-      }
-      cd ..
-      
 outputArtifacts:
-  - name: frontendImage
-    type: DOCKER_IMAGE
-    location: kmlbroker:1.0
   - name: backendImage
     type: DOCKER_IMAGE
-    location: kmlbrokerbe:1.0
+    location: kmlbrokerbe:latest

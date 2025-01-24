@@ -42,4 +42,4 @@ buildSource:
   type: Git
   location: https://github.com/mlsysadmin/kmlbroker.git
   branchName: main
-  buildSpecFilePath: frontend/build_spec.yaml
+  buildSpecFilePath: build_spec.yaml

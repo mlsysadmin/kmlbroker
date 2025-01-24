@@ -3,10 +3,11 @@ component: build
 timeoutInSeconds: 6000
 runAs: root
 shell: bash
+
 env:
   variables:
-    key: "value"
-
+    GITHUB_USERNAME: "your-github-username"
+    GITHUB_TOKEN: "${GITHUB_TOKEN}"  # Ensure this is stored in OCI DevOps secrets
   exportedVariables:
     - BUILDRUN_HASH
 
@@ -15,38 +16,61 @@ steps:
     name: "Define Tagging"
     timeoutInSeconds: 60
     command: |
-          export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
-          echo "BUILDRUN_HASH: " $BUILDRUN_HASH
+      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
+      echo "BUILDRUN_HASH: " $BUILDRUN_HASH
 
     onFailure:
       - type: Command
         command: |
           echo "Handling Failure in Frontend Build"
         timeoutInSeconds: 1200
-        runAs: root                 
-      
+        runAs: root
+
+  # Authenticate with GitHub Container Registry (GHCR)
+  - type: Command
+    name: "Authenticate with GHCR"
+    timeoutInSeconds: 60
+    command: |
+      echo "${GITHUB_TOKEN}" | docker login ghcr.io -u ${GITHUB_USERNAME} --password-stdin
+
+  # Build the Frontend Container Image
   - type: Command
     name: "Build Frontend Container Image"
     timeoutInSeconds: 3600
     command: |
       cd frontend
-      docker build --pull --rm -t kmlbroker:$BUILDRUN_HASH . || { echo "Frontend build failed"; exit 1; }
+      docker build --pull --rm -t mlbroker:$BUILDRUN_HASH . || { echo "Frontend build failed"; exit 1; }
       cd ..
 
-
+  # Build the Backend Container Image
   - type: Command
     name: "Build Backend Container Image"
     timeoutInSeconds: 3600
     command: |
       cd backend
-      docker build --pull --rm -t kmlbrokerbe:$BUILDRUN_HASH . || { echo "Backend build failed"; exit 1; }
+      docker build --pull --rm -t mlbrokerbe:$BUILDRUN_HASH . || { echo "Backend build failed"; exit 1; }
       cd ..
 
+  # Tag and Push Frontend Image to GHCR
+  - type: Command
+    name: "Push Frontend Image to GHCR"
+    timeoutInSeconds: 600
+    command: |
+      docker tag mlbroker:$BUILDRUN_HASH ghcr.io/nrcbpbtrtyz0/kmlbroker:1.0
+      docker push ghcr.io/nrcbpbtrtyz0/kmlbroker:1.0
+
+  # Tag and Push Backend Image to GHCR
+  - type: Command
+    name: "Push Backend Image to GHCR"
+    timeoutInSeconds: 600
+    command: |
+      docker tag mlbrokerbe:$BUILDRUN_HASH ghcr.io/nrcbpbtrtyz0/kmlbrokerbe:1.0
+      docker push ghcr.io/nrcbpbtrtyz0/kmlbrokerbe:1.0
 
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE
-    location: kmlbroker:${BUILDRUN_HASH}
+    location: mlbroker:${BUILDRUN_HASH}
   - name: backendImage
     type: DOCKER_IMAGE
-    location: kmlbrokerbe:${BUILDRUN_HASH}
+    location: mlbrokerbe:${BUILDRUN_HASH}

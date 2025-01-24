@@ -4,15 +4,15 @@ timeoutInSeconds: 6000
 runAs: root
 shell: bash
 
-  exportedVariables:
-    - BUILDRUN_HASH
+exportedVariables:
+  - BUILDRUN_HASH
 
 steps:
   - type: Command
     name: "Define unique image tag"
     timeoutInSeconds: 40
     command: |
-      export BUILDRUN_HASH=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
+      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
       echo "BUILDRUN_HASH: " $BUILDRUN_HASH
 
     onFailure:
@@ -28,9 +28,9 @@ steps:
     name: "Build container image"
     command: |
       cd ${OCI_WORKSPACE_DIR}/github_OCI-DevOps-Java
-      docker build --pull --rm -t kmlbroker .
+      docker build --pull --rm -t kmlbroker:${BUILDRUN_HASH} .
 
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE
-    location: kmlbroker:1.0
+    location: kmlbroker:${BUILDRUN_HASH}

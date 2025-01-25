@@ -32,7 +32,7 @@ steps:
     timeoutInSeconds: 3600
     command: |
       cd frontend
-      docker build --pull --rm -t mlbroker:$BUILDRUN_HASH . || { echo "Frontend build failed"; exit 1; }
+      docker build --pull --rm -t mlbroker:1.0 . || { echo "Frontend build failed"; exit 1; }
       cd ..
 
   # Build the Backend Container Image
@@ -41,13 +41,13 @@ steps:
     timeoutInSeconds: 3600
     command: |
       cd backend
-      docker build --pull --rm -t mlbrokerbe:$BUILDRUN_HASH . || { echo "Backend build failed"; exit 1; }
+      docker build --pull --rm -t mlbrokerbe:1.0 . || { echo "Backend build failed"; exit 1; }
       cd ..
 
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE
-    location: mlbroker:${BUILDRUN_HASH}
+    location: mlbroker:1.0
   - name: backendImage
     type: DOCKER_IMAGE
-    location: mlbrokerbe:${BUILDRUN_HASH}
+    location: mlbrokerbe:1.0

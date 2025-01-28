@@ -32,11 +32,11 @@ steps:
     runAs: root
     command: |
       cd frontend
-      docker build --pull --rm -t kmlbroker .
+      docker build --pull --rm -t kmlbroker:1.1 .
       cd ..
 
       cd backend
-      docker build --pull --rm -t kmlbrokerbe .
+      docker build --pull --rm -t kmlbrokerbe:1.1 .
       cd ..
 
 outputArtifacts:

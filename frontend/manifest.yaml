@@ -1,0 +1,81 @@
+#-----------------------------------BACKEND--------------------------
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kmlbrokerbe-deployment
+  namespace: kmlbroker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kmlbrokerbe
+  template:
+    metadata:
+      labels:
+        app: kmlbrokerbe
+    spec:
+      containers:
+        - name: kmlbrokerbe
+          image: ghcr.io/mlsysadmin/kmlbrokerbe:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8002
+          resources:
+            requests:
+              memory: "4Gi"
+              cpu: "2"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+      imagePullSecrets:
+        - name: kmlbroker2  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kmlbrokerbe-svc
+  namespace: kmlbroker
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8002  
+      targetPort: 8002
+  selector:
+    app: kmlbrokerbe
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kmlbrokerbe-ingress
+  namespace: kmlbroker
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - hosts:
+      - turtle.mlhuillier.net
+      - turt.mlhuillier.net
+    secretName: net-tls
+  ingressClassName: nginx
+  rules:
+  - host: turtle.mlhuillier.net
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: kmlbrokerbe-svc
+              port:
+                number: 8002  
+  - host: turt.mlhuillier.net
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: kmlbrokerbe-svc
+              port:
+                number: 8002  

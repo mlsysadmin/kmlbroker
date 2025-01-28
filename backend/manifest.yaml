@@ -1,0 +1,44 @@
+#----------------------------------FRONTEND----------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kmlbroker-deployment
+  namespace: kmlbroker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kmlbroker
+  template:
+    metadata:
+      labels:
+        app: kmlbroker
+    spec:
+      containers:
+        - name: kmlbroker
+          image: ghcr.io/mlsysadmin/kmlbroker:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3003
+          resources:
+            requests:
+              memory: "4Gi"
+              cpu: "2"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+      imagePullSecrets:
+        - name: ksmlbroker2  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kmlbroker-svc
+  namespace: kmlbroker
+spec:
+  type: ClusterIP  
+  ports:
+    - port: 3003  
+      targetPort: 3003
+  selector:
+    app: kmlbroker

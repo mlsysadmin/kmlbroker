@@ -1,81 +1,125 @@
-version: 0.1
-component: build
-timeoutInSeconds: 6000
-runAs: root
-shell: bash
-env:
-  # these are local variables to the build config
-  variables:
-    key: "value"
-
-  # the value of a vaultVariable is the secret-id (in OCI ID format) stored in the OCI Vault service
-  # you can then access the value of that secret in your build_spec.yaml commands
-  vaultVariables:
-  #  EXAMPLE_SECRET: "YOUR-SECRET-OCID"
-  
-  # exportedVariables are made available to use as parameters in sucessor Build Pipeline stages
-  # For this Build to run, the Build Pipeline needs to have a BUILDRUN_HASH parameter set
-  exportedVariables:
-    - BUILDRUN_HASH
-
-steps:
-  - type: Command
-    name: "Define unique image tag"
-    timeoutInSeconds: 40
-    command: |
-      export BUILDRUN_HASH=`echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7`
-      echo "BUILDRUN_HASH: " $BUILDRUN_HASH
-
-  # - type: Command
-  #   timeoutInSeconds: 600
-  #   name: "Install Node Prereqs"
-  #   command: |
-  #     cd ${OCI_WORKSPACE_DIR}/node_express
-  #     # install nvm
-  #     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-  #     export NVM_DIR="$HOME/.nvm"
-  #     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-  #     nvm install lts/erbium
-  #     echo "NODE VERSION: $(node -v)"
-  #     echo "NPM VERSION: $(npm -v)"
-
-    onFailure:
-      - type: Command
-        command: |
-          echo "Handling Failure"
-          echo "Failure successfully handled"
-        timeoutInSeconds: 40
-        runAs: root
-  
-  # - type: Command
-  #   timeoutInSeconds: 600
-  #   name: "NPM install"
-  #   command: |
-  #     cd ${OCI_WORKSPACE_DIR}/node_express
-  #     npm install
-  #   onFailure:
-  #     - type: Command
-  #       command: |
-  #         echo "Handling Failure"
-  #         echo "Failure successfully handled"
-  #       timeoutInSeconds: 40
-  #       runAs: root
-
-  # - type: Command
-  #   timeoutInSeconds: 1200
-  #   name: "Run Tests"
-  #   command: |
-  #     cd ${OCI_WORKSPACE_DIR}/node_express
-  #     npm test
-
-  - type: Command
-    timeoutInSeconds: 1200
-    name: "Build container image"
-    command: |
-      cd frontend
-      docker build --pull --rm -t kmlbroker .
-
-outputArtifacts:
-  - name: frontend
-    type: DOCKER_IMAGE
-    location: kmlbroker:latest
+#----------------------------------FRONTEND----------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kmlbroker-deployment
+  namespace: kmlbroker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kmlbroker
+  template:
+    metadata:
+      labels:
+        app: kmlbroker
+    spec:
+      containers:
+        - name: kmlbroker
+          image: ghcr.io/mlsysadmin/kmlbroker:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3003
+          resources:
+            requests:
+              memory: "4Gi"
+              cpu: "2"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+      imagePullSecrets:
+        - name: kmlbroker2  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kmlbroker-svc
+  namespace: kmlbroker
+spec:
+  type: ClusterIP  
+  ports:
+    - port: 3003  
+      targetPort: 3003
+  selector:
+    app: kmlbroker
+#-----------------------------------BACKEND--------------------------
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kmlbrokerbe-deployment
+  namespace: kmlbroker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kmlbrokerbe
+  template:
+    metadata:
+      labels:
+        app: kmlbrokerbe
+    spec:
+      containers:
+        - name: kmlbrokerbe
+          image: ghcr.io/mlsysadmin/kmlbrokerbe:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8002
+          resources:
+            requests:
+              memory: "4Gi"
+              cpu: "2"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+      imagePullSecrets:
+        - name: kmlbroker2  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kmlbrokerbe-svc
+  namespace: kmlbroker
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8002  
+      targetPort: 8002
+  selector:
+    app: kmlbrokerbe
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kmlbrokerbe-ingress
+  namespace: kmlbroker
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - hosts:
+      - turtle.mlhuillier.net
+      - turt.mlhuillier.net
+    secretName: net-tls
+  ingressClassName: nginx
+  rules:
+  - host: turtle.mlhuillier.net
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: kmlbrokerbe-svc
+              port:
+                number: 8002  
+  - host: turt.mlhuillier.net
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: kmlbrokerbe-svc
+              port:
+                number: 8002      

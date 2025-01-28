@@ -42,7 +42,7 @@ steps:
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE
-    location: frontend:1.1
+    location: kmlbroker:1.1
   - name: backendImage
     type: DOCKER_IMAGE
-    location: backend:1.1
+    location: kmlbrokerbe:1.1

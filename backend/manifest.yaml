@@ -1,5 +1,3 @@
-#-----------------------------------BACKEND--------------------------
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,7 +27,7 @@ spec:
               memory: "4Gi"
               cpu: "2"
       imagePullSecrets:
-        - name: kmlbroker2  
+        - name: kmlbroker 
 ---
 apiVersion: v1
 kind: Service

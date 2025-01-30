@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: kmlbroker
-          image: ghcr.io/mlsysadmin/kmlbroker:1.1
+          image: ghcr.io/nr7audjfcmkpn/kmlbroker:1.1
           imagePullPolicy: Always
           ports:
             - containerPort: 3003

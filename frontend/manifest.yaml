@@ -1,43 +1,67 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kmlbroker-deployment
+  name: brokerage-deployment
   namespace: kmlbroker
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kmlbroker
+      app: brokerage
   template:
     metadata:
       labels:
-        app: kmlbroker
+        app: brokerage
     spec:
       containers:
-        - name: kmlbroker
-          image: nrt.ocir.io/nr7audjfcmkp/kmlbroker:1.1
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 3003
-          resources:
-            requests:
-              memory: "4Gi"
-              cpu: "2"
-            limits:
-              memory: "4Gi"
-              cpu: "2"
+      - name: brokerage
+        image: nrt.ocir.io/nrcbpbtrtyz0/kmlbroker:1.1
+        imagePullPolicy: Always 
+        ports:
+        - containerPort: 3003
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+          limits:
+            memory: "4Gi"
+            cpu: "2"        
+        env:
+        - name: REACT_APP_LOGIN_URL
+          value: "https://napu.mlhuillier.com/login"
+        - name: REACT_APP_REDIRECT_URL
+          value: "https://fanny.mlhuillier.com"
+        - name: REACT_APP_BASE_URL
+          value: "https://fannybe.mlhuillier.com"
+        - name: REACT_APP_CKYC_URL
+          value: "https://ml-ckyc-dev.df.r.appspot.com"
+        - name: REACT_APP_API_KEY
+          value: "AIzaSyDC86gN1O512Ucqzc9UEtYnyosw8vpLIFM"
+        - name: REACT_APP_STORAGE_BUCKET_URL
+          value: "https://objectstorage.ap-tokyo-1.oraclecloud.com/p/Sc_61Co37YYbWS8Jr2uj_9AzrS6mFe5aWnYrL0cIRtv7BL-xIOyE17tr4i4mvc82/n/nr7audjfcmkp/b/Repository/o/"
+        - name: REACT_APP_OBJECT_NAME
+          value: "mlbrokerage"
+        - name: REACT_APP_VERSION
+          value: "1.0"
+        - name: REACT_APP_IGOT_API_URL
+          value: "https://dev.mlhuilierpropertiesportal.com"     
+        - name: REACT_APP_LOGIN
+          value: "https://napu.mlhuillier.com/login"   
+        - name: REACT_APP_REDIRECT_SYMPH_LOGIN
+          value: "https://napu.mlhuillier.com"           
+        - name: REACT_APP_LOGOUT_URL
+          value: "https://napu.mlhuillier.com/logout"                              
       imagePullSecrets:
-        - name: kmlbroker
----
+      - name: kmlbroker
 apiVersion: v1
 kind: Service
 metadata:
-  name: kmlbroker-svc
+  name: brokeragesvc
   namespace: kmlbroker
 spec:
-  type: ClusterIP  
-  ports:
-    - port: 3003  
-      targetPort: 3003
   selector:
-    app: kmlbroker
+    app: brokerage
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3003

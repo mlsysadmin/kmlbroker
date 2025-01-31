@@ -1,79 +1,119 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kmlbrokerbe-deployment
+  name: brokeragebe-deployment
   namespace: kmlbroker
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kmlbrokerbe
+      app: brokeragebe
   template:
     metadata:
       labels:
-        app: kmlbrokerbe
+        app: brokeragebe
     spec:
       containers:
-        - name: kmlbrokerbe
-          image: nrt.ocir.io/nr7audjfcmkp/kmlbrokerbe:1.1
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8002
-          resources:
-            requests:
-              memory: "4Gi"
-              cpu: "2"
-            limits:
-              memory: "4Gi"
-              cpu: "2"
+      - name: brokeragebe
+        image: nrt.ocir.io/nrcbpbtrtyz0/kmlbrokerbe:1.1
+        imagePullPolicy: Always         
+        ports:
+        - containerPort: 8002
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+          limits:
+            memory: "4Gi"
+            cpu: "2"           
+        env:
+        - name: PORT
+          value: "8002"
+        - name: CLIENT_ID 
+          value: "42633297044-7kjflt7uj0ifntt3nvap4e67s1tc2vm1.apps.googleusercontent.com"
+        - name: CLIENT_SECRET
+          value: "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"
+        - name: REDIRECT_URI
+          value: "https://fannybe.mlhuillier.com/auth/google/callback"
+        - name: REFRESH_TOKEN
+          value: "1//044G7Eu2oUFMGCgYIARAAGAQSNwF-L9IrUlNLg7cDhWCbqkKZQkhlAlg2EofzKl-CFpPppYi-NRPrLRWR4KRj_JVb63PjZZO0DSQ"
+        - name: CALLBACK_URL
+          value: "https://fannybe.mlhuillier.com/auth/google/callback"
+        - name: AUTH_URI
+          value: "https://accounts.google.com/o/oauth2/auth"
+        - name: TOKEN_URI
+          value: "https://oauth2.googleapis.com/token"
+        - name: AUTH_PROVIDER_CERT_URL
+          value: "https://www.googleapis.com/oauth2/v1/certs"
+        - name: API_KEY
+          value: "AIzaSyDC86gN1O512Ucqzc9UEtYnyosw8vpLIFM"  
+        - name: SECRET_KEY
+          value: "mlbrokerage"
+        - name: CLIENT_APP_URL
+          value: "https://fanny.mlhuillier.com"
+        - name: DB_NAME
+          value: "ml_brokerage"
+        - name: DB_HOST
+          value: "10.4.9.37" 
+        - name: DB_PASS
+          value: "JMameEDzwz+Cm6#4"  
+        - name: DB_USER
+          value: "dev-brokerusr"
+        - name: NODE_ENV
+          value: "development"
+        - name: COOKIE_DOMAIN
+          value: "127.0.0.1"
+        - name: LISTING_PREFIX_NAME
+          value: "Listing"
+        - name: APPLICATION_PREFIX_NAME
+          value: "Application"
+        - name: FINANCE_PREFIX_NAME
+          value: "Financing"
+        - name: LISTING_APPROVAL_LEVEL 
+          value: "3"
+        - name: STORAGE_BUCKET_URL
+          value: "https://objectstorage.ap-tokyo-1.oraclecloud.com/p/Sc_61Co37YYbWS8Jr2uj_9AzrS6mFe5aWnYrL0cIRtv7BL-xIOyE17tr4i4mvc82/n/nr7audjfcmkp/b/Repository/o/"
+        - name: OBJECT_NAME
+          value: "mlbrokerage"
+        - name: AUTH_SERVICE_SYMPH_URL
+          value: "https://ml-authservice-dev.df.r.appspot.com"
+        - name: CLIENT_ID
+          value: "352209700312-pkjmmpdoq4iu6q7f3ffvgm7tih199gie.apps.googleusercontent.com" 
+        - name: SYMPH_API_KEY
+          value: "mlibApiKey"
+        - name: SYMPH_SECRET_KEY 
+          value: "mlibSecret"
+        - name: SYMPH_ML_WEB_BASE_URL
+          value: "https://napu.mlhuillier.com" 
+        - name: SYMPH_CKYC_API_URL
+          value: "https://ml-ckyc-dev.df.r.appspot.com"
+        - name: SYMPH_ML_MONEY_API_URL
+          value: "https://ml-money-staging.df.r.appspot.com"
+        - name: X_API_KEY
+          value: "mlib:n6BQpHScTQASQu9P"
+        - name: EMAIL_HOST
+          value: "10.4.9.90" 
+        - name: EMAIL_PORT
+          value: "25"
+        - name: EMAIL_FROM
+          value: "donotreply@mlhuillier.com"
+        - name: EMAIL_USERNAME
+          value: ""
+        - name: MAIL_PASSWORD
+          value: "" 
+        - name: EMAIL_TO
+          value: "jonalyn.mobilla@mlhuillier.com|properties@mlhuillier.com|sheila.rodriguez@mlhuillier.com"                    
       imagePullSecrets:
-        - name: kmlbroker 
----
+      - name: kmlbroker
 apiVersion: v1
 kind: Service
 metadata:
-  name: kmlbrokerbe-svc
+  name: brokeragebesvc
   namespace: kmlbroker
 spec:
-  type: ClusterIP
-  ports:
-    - port: 8002  
-      targetPort: 8002
   selector:
-    app: kmlbrokerbe
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: kmlbrokerbe-ingress
-  namespace: kmlbroker
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-spec:
-  tls:
-  - hosts:
-      - turtle.mlhuillier.net
-      - turt.mlhuillier.net
-    secretName: net-tls
-  ingressClassName: nginx
-  rules:
-  - host: turtle.mlhuillier.net
-    http:
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: kmlbrokerbe-svc
-              port:
-                number: 8002  
-  - host: turt.mlhuillier.net
-    http:
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: kmlbrokerbe-svc
-              port:
-                number: 8002  
+    app: brokeragebe
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8002

@@ -32,17 +32,17 @@ steps:
     runAs: root
     command: |
       cd frontend
-      docker build --pull --rm -t kmlbroker:1.1 .
+      docker build --pull --rm -t kmlbroker:${BUILDRUN_HASH} .
       cd ..
 
       cd backend
-      docker build --pull --rm -t kmlbrokerbe:1.1 .
+      docker build --pull --rm -t kmlbrokerbe:${BUILDRUN_HASH} .
       cd ..
 
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE
-    location: kmlbroker:1.1
+    location: kmlbroker:${BUILDRUN_HASH}
   - name: backendImage
     type: DOCKER_IMAGE
-    location: kmlbrokerbe:1.1
+    location: kmlbrokerbe:${BUILDRUN_HASH}

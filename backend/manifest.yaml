@@ -1,0 +1,172 @@
+#------------------------------------------------------------------BACKEND-DEPLOYMENT------------------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brokeragebe-deployment
+  namespace: kmlbroker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: brokeragebe
+  template:
+    metadata:
+      labels:
+        app: brokeragebe
+    spec:
+      containers:
+      - name: brokeragebe
+        image: nrt.ocir.io/nr7audjfcmkp/kmlbrokerbe:${BUILDRUN_HASH}
+        imagePullPolicy: Always         
+        ports:
+        - containerPort: 8002
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+          limits:
+            memory: "4Gi"
+            cpu: "2"           
+        envFrom:
+        - secretRef:       
+            name: brokeragebe-env-dev                                             
+      imagePullSecrets:
+      - name: kmlbroker
+#------------------------------------------------------------------BACKEND-SERVICE---------------------------------------------------------------------------------------------
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: brokeragebesvc
+  namespace: kmlbroker
+spec:
+  selector:
+    app: brokeragebe
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8002
+#--------------------------------------------------------------------BACKEND-INGRESS-------------------------------------------------------------------------------------------
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: brokeragebe-ingress
+  namespace: kmlbroker
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - sinulogbe.mlhuillier.com
+    secretName: com-tls
+  rules:
+  - host: sinulogbe.mlhuillier.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: brokeragebesvc
+            port:
+              number: 80
+#----------------------------------------------------------------------BACKEND-AUTO-SCALING------------------------------------------------------------------------------------
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: brokeragebe-hpa
+  namespace: kmlbroker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: brokeragebe-deployment
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70 
+#-----------------------------------------------BACKEND-ENV-FILES------------------------------------------
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: brokeragebe-env-dev
+  namespace: quickdevteam
+type: Opaque
+stringData:
+  PORT: "8002"
+  CLIENT_ID: "42633297044-7kjflt7uj0ifntt3nvap4e67s1tc2vm1.apps.googleusercontent.com"
+  CLIENT_SECRET: "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"
+  REDIRECT_URI: "https://sinulogbe.mlhuillier.com/auth/google/callback"
+  REFRESH_TOKEN: "1//044G7Eu2oUFMGCgYIARAAGAQSNwF-L9IrUlNLg7cDhWCbqkKZQkhlAlg2EofzKl-CFpPppYi-NRPrLRWR4KRj_JVb63PjZZO0DSQ"
+  CALLBACK_URL: "https://sinulogbe.mlhuillier.com/auth/google/callback"
+  AUTH_URI: "https://accounts.google.com/o/oauth2/auth"
+  TOKEN_URI: "https://oauth2.googleapis.com/token"
+  AUTH_PROVIDER_CERT_URL: "https://www.googleapis.com/oauth2/v1/certs"
+  API_KEY: "AIzaSyDC86gN1O512Ucqzc9UEtYnyosw8vpLIFM"
+  SECRET_KEY: "mlbrokerage"
+  CLIENT_APP_URL: "https://sinulog.mlhuillier.com"
+  DB_NAME: "ml_brokerage"
+  DB_HOST: "10.4.9.37"
+  DB_PASS: "JMameEDzwz+Cm6#4"
+  DB_USER: "dev-brokerusr"
+  NODE_ENV: "development"
+  COOKIE_DOMAIN: ".mlhuillier.com"
+  COOKIE_HTTP_ONLY: "true"
+  COOKIE_SECURE: "fales"
+  LISTING_PREFIX_NAME: "Listing"
+  APPLICATION_PREFIX_NAME: "Application"
+  FINANCE_PREFIX_NAME: "Financing"
+  LISTING_APPROVAL_LEVEL: "3"
+  STORAGE_BUCKET_URL: "https://objectstorage.ap-tokyo-1.oraclecloud.com/p/Sc_61Co37YYbWS8Jr2uj_9AzrS6mFe5aWnYrL0cIRtv7BL-xIOyE17tr4i4mvc82/n/nr7audjfcmkp/b/Repository/o/"
+  OBJECT_NAME: "mlbrokerage"
+  AUTH_SERVICE_SYMPH_URL: "https://ml-authservice-dev.df.r.appspot.com"
+  CLIENT_ID_2: "352209700312-pkjmmpdoq4iu6q7f3ffvgm7tih199gie.apps.googleusercontent.com"
+  SYMPH_API_KEY: "mlibApiKey"
+  SYMPH_SECRET_KEY: "mlibSecret"
+  SYMPH_ML_WEB_BASE_URL: "https://napu.mlhuillier.com"
+  SYMPH_CKYC_API_URL: "https://ml-ckyc-dev.df.r.appspot.com"
+  SYMPH_ML_MONEY_API_URL: "https://ml-money-staging.df.r.appspot.com"
+  X_API_KEY: "mlib:n6BQpHScTQASQu9P"
+  EMAIL_HOST: "10.4.9.90"
+  EMAIL_PORT: "25"
+#  EMAIL_PORT: "donotreply@mlhuillier.com"
+  EMAIL_FROM: "donotreply@mlhuillier.com"
+  EMAIL_USERNAME: "skip lang"
+  EMAIL_PASSWORD: "skip lang"
+  EMAIL_TO: "jonalyn.mobilla@mlhuillier.com|jonalyn.mobilla@gmail.com|sheila.rodriguez@mlhuillier.com"
+  IGOT_SOLUTION_BASE_URL: "https://dev.mlhuilierpropertiesportal.com"
+  ALLOWED_ORIGINS: "http://localhost:4200|https://sinulogbe.mlhuillier.com|https://sinulog.mlhuillier.com|https://dev.mlhuilierpropertiesportal.com"
+  ML_MONEY_X_API_KEY: "mlProps:cLEQnco5"
+  ML_MONEY_API_KEY: "mlPropsApiKey"
+  ML_MONEY_HASH_SECRET_KEY: "mlPropsSecret"
+  EXTERNAL_LOGIN_SERVICE: "ML_PROPERTIES"
+  NOT_ALLOWED_SELLER_TIER: 'SEMIVERIFIED|BUYER'
+  COOKIE_ACCOUNT_DETAILS: 'account_details'
+  COOKIE_ACCOUNT_SESSION: 'access_token'
+  OTP_MESSAGE : "Your ML Properties One-Time-PIN(OTP) is <otp>. Please do not share this with anyone, including those who claim to be ML personnel."
+  OTP_LIMIT: '2'
+  OTP_PASSWORD: 'd3v@cC3ssv5312'
+  OTP_USERNAME: 'mLw@!!3tv5r'
+  OTP_URL: 'https://smsproviderdev.mlhuillier.com/OTP/MLWalletOTP/api/v2'
+  ALLOWED_EXTERNAL_SERVICES: 'ML_PROPERTIES_ADMIN'
+  OCI_ENDPOINT: 'https://objectstorage.ap-tokyo-'
+  OCI_TENANCY_NAMESPACE: 'nr7audjfcmkp'
+  OCI_BUCKETNAME: 'ML_Brokerage'
+  OCI_COMPARTMENT: 'ocid1.compartment.oc1..aaaaaaaaxgdsmsb25llh4klwbb5ccop24skvnnfoxgxvinvevsggb4krxy7q'
+  OCI_REGION: 'ap-tokyo-1'
+  OCI_TENANCY: 'ocid1.tenancy.oc1..aaaaaaaaxffcmy2gt6ciqgxj624h2mago4oawx436hxhsuiczzt7tho6gnyq'
+  OCI_FINGERPRINT: 'e8:16:93:89:db:47:cf:35:8f:fb:55:0b:d6:79:4a:7c'
+  OCI_USER: 'ocid1.user.oc1..aaaaaaaa3exinwywbiguoom4xkxfu5lwpinbf3tyf5byw7bonzkqijr3s5ka'
+  AUTH_CLIENT_SECRET: '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'
+  AUTH_CLIENT_ID: '42633297044-7kjflt7uj0ifntt3nvap4e67s1tc2vm1.apps.googleusercontent.com'
+  SERVER_APP_URL: "https://sinulogbe.mlhuillier.com"

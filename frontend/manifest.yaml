@@ -1,0 +1,119 @@
+#-------------------------------------------------------------------FRONTEND-DEPLOYMENT---------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brokerage-deployment
+  namespace: kmlbroker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: brokerage
+  template:
+    metadata:
+      labels:
+        app: brokerage
+    spec:
+      containers:
+      - name: brokerage
+        image: nrt.ocir.io/nr7audjfcmkp/kmlbroker:1.1
+        imagePullPolicy: Always 
+        ports:
+        - containerPort: 3003
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+        envFrom:
+        - secretRef:       
+            name: brokerage-env-dev                                
+      imagePullSecrets:
+      - name: kmlbroker
+#-------------------------------------------------------------------FRONTEND-SERVICE---------------------------------------------------------------------
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: brokeragesvc
+  namespace: kmlbroker
+spec:
+  selector:
+    app: brokerage
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3003
+#-------------------------------------------------------------------FRONTEND-INGRESS--------------------------------------------------------------------------
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: brokerage-ingress
+  namespace: kmlbroker
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - sinulog.mlhuillier.com
+    secretName: com-tls
+  rules:
+  - host: sinulog.mlhuillier.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: brokeragesvc
+            port:
+              number: 80
+#-----------------------------------------------------------------FRONTEND-AUTO-SCALING---------------------------------------------------------------------
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: brokerage-hpa
+  namespace: kmlbroker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: brokerage-deployment
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70 
+#---------------------------------------------------------------------FRONTEND-ENV-FILES-----------------------------------------------------
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: brokerage-env-dev
+  namespace: kmlbroker
+type: Opaque
+stringData:
+  REACT_APP_LOGIN_URL: "https://napu.mlhuillier.com/login"
+  REACT_APP_REDIRECT_URL: "https://sinulog.mlhuillier.com"
+  REACT_APP_BASE_URL: "https://sinulogbe.mlhuillier.com"
+  REACT_APP_CKYC_URL: "https://ml-ckyc-dev.df.r.appspot.com"
+  REACT_APP_API_KEY: "AIzaSyDC86gN1O512Ucqzc9UEtYnyosw8vpLIFM"
+  REACT_APP_STORAGE_BUCKET_URL: "https://objectstorage.ap-tokyo-1.oraclecloud.com/p/Sc_61Co37YYbWS8Jr2uj_9AzrS6mFe5aWnYrL0cIRtv7BL-xIOyE17tr4i4mvc82/n/nr7audjfcmkp/b/Repository/o/"
+  REACT_APP_OBJECT_NAME: "mlbrokerage"
+  REACT_APP_VERSION: "1.0"
+  REACT_APP_IGOT_API_URL: "https://dev.mlhuilierpropertiesportal.com"
+  REACT_APP_LOGIN: "https://napu.mlhuillier.com/login"
+  REACT_APP_REDIRECT_SYMPH_LOGIN: "https://napu.mlhuillier.com"
+  REACT_APP_LOGOUT_URL: "https://napu.mlhuillier.com/logout"
+  REACT_APP_SESSION_COOKIE_NAME: "access_token"
+  REACT_APP_ACCOUNT_COOKIE_NAME: "account_details"

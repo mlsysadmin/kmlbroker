@@ -5,57 +5,12 @@ runAs: root
 shell: bash
 env:
   variables:
-    key: "value"
+    namespace: "kmlbroker"
+
   exportedVariables:
     - BUILDRUN_HASH
 
 steps:
-  - type: Command
-    name: "Install kubectl"
-    timeoutInSeconds: 60
-    command: |
-      curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-      chmod +x kubectl
-      mv kubectl /usr/local/bin/
-
-  - type: Command
-    name: "Verify OCI CLI"
-    timeoutInSeconds: 60
-    command: |
-      oci --version
-      oci ce cluster get --cluster-id ocid1.cluster.oc1.ap-tokyo-1.aaaaaaaaxxdjx5bt2bvjgkigvzyqzgpc5tllrtkzmduybc44scgmghlvqbkq
-
-  - type: Command
-    name: "Configure kubectl"
-    timeoutInSeconds: 120
-    command: |
-      oci ce cluster create-kubeconfig --cluster-id ocid1.cluster.oc1.ap-tokyo-1.aaaaaaaaxxdjx5bt2bvjgkigvzyqzgpc5tllrtkzmduybc44scgmghlvqbkq --file $HOME/.kube/config --region ap-tokyo-1 --token-version 2.0.0 --kube-endpoint PRIVATE_ENDPOINT
-      kubectl config get-contexts
-      kubectl config use-context context-cgmghlvqbkq
-
-  - name: "Create Kubernetes Namespace"
-    stepType: Command
-    command: |
-      kubectl create namespace githubrepo
-
-  - type: Command
-    name: "Create Docker Registry Secret"
-    timeoutInSeconds: 60
-    command: |
-      kubectl create secret docker-registry kmlbroker \
-        --docker-server=nrt.ocir.io \
-        --docker-username="nr7audjfcmkp/OracleIdentityCloudService/kate.ceballos@mlhuillier.com" \
-        --docker-password="<rc2K[obBEi_l0+WhQ>R" \
-        --docker-email=kate.ceballos@mlhuillier.com -n kmlbroker
-
-  - type: Command
-    name: "Create TLS Secret"
-    timeoutInSeconds: 60
-    command: |
-      cd .comSSL
-      kubectl create secret tls com-tls --cert=combine-com.crt --key=dprivate.pem -n kmlbroker
-      cd ..
-
   - type: Command
     name: "Define Tagging"
     timeoutInSeconds: 60

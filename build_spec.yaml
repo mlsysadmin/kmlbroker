@@ -4,8 +4,8 @@ timeoutInSeconds: 6000
 runAs: root
 shell: bash
 environment_variables:
-  - name: namespace
-    value: kmlbroker 
+  - name: K8S_NAMESPACE
+    value: kmlbroker
 env:
   variables:
     key: "value"

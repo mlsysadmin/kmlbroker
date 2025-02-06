@@ -31,8 +31,10 @@ steps:
     name: "Create Namespace"
     timeoutInSeconds: 60
     command: |
-      kubectl create namespace kmlbroker
-
+      for i in {1..5}; do
+        kubectl create namespace kmlbroker && break || sleep 10;
+      done
+      
   - type: Command
     name: "Create Docker Registry Secret"
     timeoutInSeconds: 60

@@ -12,6 +12,24 @@ env:
 
 steps:
   - type: Command
+    name: "Create Docker Registry Secret"
+    timeoutInSeconds: 60
+    command: |
+      kubectl create secret docker-registry kmlbroker \
+        --docker-server=nrt.ocir.io \
+        --docker-username="nr7audjfcmkp/OracleIdentityCloudService/kate.ceballos@mlhuillier.com" \
+        --docker-password="<rc2K[obBEi_l0+WhQ>R" \
+        --docker-email=kate.ceballos@mlhuillier.com -n kmlbroker
+
+  - type: Command
+    name: "Create TLS Secret"
+    timeoutInSeconds: 60
+    command: |
+      cd .comSSL
+      kubectl create secret tls com-tls --cert=combine-com.crt --key=dprivate.pem -n kmlbroker
+      cd ..
+
+  - type: Command
     name: "Define Tagging"
     timeoutInSeconds: 60
     command: |

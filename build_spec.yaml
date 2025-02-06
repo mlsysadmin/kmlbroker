@@ -21,14 +21,32 @@ steps:
       mv kubectl /usr/local/bin/
 
   - type: Command
-    name: "Create Docker Registry Secret"
+    name: "Create Kubernetes Job"
     timeoutInSeconds: 60
     command: |
-      kubectl create secret docker-registry kmlbroker \
-        --docker-server=nrt.ocir.io \
-        --docker-username="nr7audjfcmkp/OracleIdentityCloudService/kate.ceballos@mlhuillier.com" \
-        --docker-password="<rc2K[obBEi_l0+WhQ>R" \
-        --docker-email=kate.ceballos@mlhuillier.com -n kmlbroker
+      cat <<EOF | kubectl apply -f -
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: create-secret-job
+        namespace: kmlbroker
+      spec:
+        template:
+          spec:
+            containers:
+            - name: secret-creator
+              image: bitnami/kubectl
+              command:
+              - /bin/sh
+              - -c
+              - |
+                kubectl create secret docker-registry kmlbroker \
+                  --docker-server=nrt.ocir.io \
+                  --docker-username="nr7audjfcmkp/OracleIdentityCloudService/kate.ceballos@mlhuillier.com" \
+                  --docker-password="<rc2K[obBEi_l0+WhQ>R" \
+                  --docker-email=kate.ceballos@mlhuillier.com -n kmlbroker
+            restartPolicy: Never
+      EOF
 
   - type: Command
     name: "Create TLS Secret"

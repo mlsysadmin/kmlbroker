@@ -1,4 +1,3 @@
-#------------------------------------------------------------------BACKEND-DEPLOYMENT------------------------------------------------------------------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,13 +25,12 @@ spec:
             cpu: "2"
           limits:
             memory: "4Gi"
-            cpu: "2"           
+            cpu: "2"
         envFrom:
         - secretRef:       
-            name: brokeragebe-env-dev                                             
+            name: brokeragebe-env-dev                                
       imagePullSecrets:
       - name: kmlbroker
-#------------------------------------------------------------------BACKEND-SERVICE---------------------------------------------------------------------------------------------
 ---
 apiVersion: v1
 kind: Service
@@ -46,8 +44,8 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 8002
-#--------------------------------------------------------------------BACKEND-INGRESS-------------------------------------------------------------------------------------------
 ---
+# ----------------------------------- BACKEND INGRESS -----------------------------------
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -59,22 +57,22 @@ metadata:
 spec:
   ingressClassName: nginx
   tls:
-  - hosts:
-    - sinulogbe.mlhuillier.com
-    secretName: com-tls
+    - hosts:
+        - sinulogbe.mlhuillier.com
+      secretName: com-tls
   rules:
-  - host: sinulogbe.mlhuillier.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: brokeragebesvc
-            port:
-              number: 80
-#----------------------------------------------------------------------BACKEND-AUTO-SCALING------------------------------------------------------------------------------------
+    - host: sinulogbe.mlhuillier.com
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: brokeragebesvc
+                port:
+                  number: 80
 ---
+#-------------------------------------BACKEND-AUTO-SCALING-----------------------------------
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -93,9 +91,9 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 70 
-#-----------------------------------------------BACKEND-ENV-FILES------------------------------------------
+        averageUtilization: 70
 ---
+#-----------------------------------------------BACKEND-ENV-FILES------------------------------------------
 apiVersion: v1
 kind: Secret
 metadata:
@@ -140,7 +138,7 @@ stringData:
   EMAIL_HOST: "10.4.9.90"
   EMAIL_PORT: "25"
 #  EMAIL_PORT: "donotreply@mlhuillier.com"
-  EMAIL_FROM: "donotreply@mlhuillier.com"
+#  EMAIL_FROM: "donotreply@mlhuillier.com"
   EMAIL_USERNAME: "skip lang"
   EMAIL_PASSWORD: "skip lang"
   EMAIL_TO: "jonalyn.mobilla@mlhuillier.com|jonalyn.mobilla@gmail.com|sheila.rodriguez@mlhuillier.com"

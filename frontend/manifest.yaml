@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: brokerage
-        image: nrt.ocir.io/nr7audjfcmkp/kmlbroker:1.1
+        image: nrt.ocir.io/nr7audjfcmkp/kmlbroker:${BUILDRUN_HASH}
         imagePullPolicy: Always 
         ports:
         - containerPort: 3003
@@ -94,7 +94,7 @@ spec:
       target:
         type: Utilization
         averageUtilization: 70 
-#---------------------------------------------------------------------FRONTEND-ENV-FILES-----------------------------------------------------
+#---------------------------------------------------FRONTEND-ENV-FILES-----------------------------------------------------
 ---
 apiVersion: v1
 kind: Secret

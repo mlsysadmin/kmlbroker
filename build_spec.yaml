@@ -13,32 +13,27 @@ env:
     - BUILDRUN_HASH
 
 steps:
-  - name: Configure kubectl for OKE
+  - name: Create Namespace
     command: |
-      export KUBECONFIG=/workspace/kubeconfig
-      oci ce cluster create-kubeconfig --cluster-id ocid1.cluster.oc1.ap-tokyo-1.aaaaaaaaxxdjx5bt2bvjgkigvzyqzgpc5tllrtkzmduybc44scgmghlvqbkq --file $HOME/.kube/config --region ap-tokyo-1 --token-version 2.0.0  --kube-endpoint PRIVATE_ENDPOINT
-
-  - name: "Ensure Namespace Exists"
-    type: Command
-    command: |
-      kubectl create namespace ${K8S_NAMESPACE}
-      echo "Waiting for namespace to be available..."
-      sleep 5
-
-  - name: Apply Namespace YAML
-    command: |
-      export KUBECONFIG=/workspace/kubeconfig
-      kubectl apply -f namespace.yaml --validate=false
-
-  - name: "Define Tagging"
-    type: Command
+      kubectl create namespace githubrepo --dry-run=client -o yaml | kubectl apply -f -
+      
+  - type: Command
+    name: "Define Tagging"
     timeoutInSeconds: 60
     command: |
       export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
-      echo "BUILDRUN_HASH: $BUILDRUN_HASH"
+      echo "BUILDRUN_HASH: " $BUILDRUN_HASH
 
-  - name: "Build container image"
-    type: Command
+    onFailure:
+      - type: Command
+        command: |
+          echo "Handling Failure"
+          echo "Failure successfully handled"
+        timeoutInSeconds: 1200
+        runAs: root
+
+  - type: Command
+    name: "Build container image"
     timeoutInSeconds: 6000
     runAs: root
     command: |
@@ -54,7 +49,6 @@ outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE
     location: kmlbroker:${BUILDRUN_HASH}
-
   - name: backendImage
     type: DOCKER_IMAGE
     location: kmlbrokerbe:${BUILDRUN_HASH}

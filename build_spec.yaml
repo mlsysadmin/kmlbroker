@@ -29,15 +29,27 @@ steps:
         runAs: root
 
   - type: Command
+    name: "Install kubectl"
+    timeoutInSeconds: 60
+    command: |
+      curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      chmod +x kubectl
+      mv kubectl /usr/local/bin/
+      kubectl version --client
+
+  - type: Command
+    name: "Authenticate kubectl"
+    timeoutInSeconds: 60
+    command: |
+      oci ce cluster create-kubeconfig --cluster-id ${K8S_CLUSTER_ID} --file $HOME/.kube/config --region ${OCI_REGION}
+      export KUBECONFIG=$HOME/.kube/config
+      kubectl get nodes
+
+  - type: Command
     name: "Ensure Kubernetes Namespace Exists"
     timeoutInSeconds: 120
     command: |
-      if ! kubectl get namespace ${K8S_NAMESPACE} >/dev/null 2>&1; then
-        echo "Namespace ${K8S_NAMESPACE} not found. Creating..."
-        kubectl create namespace ${K8S_NAMESPACE}
-      else
-        echo "Namespace ${K8S_NAMESPACE} already exists."
-      fi
+      kubectl get namespace ${K8S_NAMESPACE} || kubectl create namespace ${K8S_NAMESPACE}
 
   - type: Command
     name: "Build container image"

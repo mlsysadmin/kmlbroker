@@ -41,7 +41,7 @@ steps:
     name: "Authenticate kubectl"
     timeoutInSeconds: 60
     command: |
-      oci ce cluster create-kubeconfig --cluster-id ${K8S_CLUSTER_ID} --file $HOME/.kube/config --region ${OCI_REGION}
+      oci ce cluster create-kubeconfig --cluster-id ocid1.cluster.oc1.ap-tokyo-1.aaaaaaaaxxdjx5bt2bvjgkigvzyqzgpc5tllrtkzmduybc44scgmghlvqbkq --file $HOME/.kube/config --region ap-tokyo-1 --token-version 2.0.0  --kube-endpoint PRIVATE_ENDPOINT
       export KUBECONFIG=$HOME/.kube/config
       kubectl get nodes
 

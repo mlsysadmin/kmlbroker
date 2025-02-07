@@ -12,7 +12,6 @@ env:
     - BUILDRUN_HASH
 
 steps:
-  - type: Command
   - name: "Create Namespace if Not Exists"
     command: |
       kubectl get namespace kmlbroker || kubectl create namespace kmlbroker

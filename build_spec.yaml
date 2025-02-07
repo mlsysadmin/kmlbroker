@@ -23,15 +23,12 @@ steps:
     command: |
       export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
       echo "BUILDRUN_HASH: $BUILDRUN_HASH"
-
-  - name: "Handle Failure"
-    type: Command
-    timeoutInSeconds: 1200
-    runAs: root
     onFailure:
-      command: |
-        echo "Handling Failure"
-        echo "Failure successfully handled"
+      - type: Command
+        timeoutInSeconds: 120
+        command: |
+          echo "Handling Failure"
+          echo "Failure successfully handled"
 
   - name: "Build container image"
     type: Command

@@ -15,8 +15,8 @@ env:
 steps:
   - name: Create Namespace
     command: |
-      kubectl create namespace githubrepo --dry-run=client -o yaml | kubectl apply -f -
-      
+      kubectl create namespace kmlbroker --dry-run=client -o yaml | kubectl apply -f -
+
   - type: Command
     name: "Define Tagging"
     timeoutInSeconds: 60

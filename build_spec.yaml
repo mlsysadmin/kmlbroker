@@ -13,18 +13,15 @@ env:
     - BUILDRUN_HASH
 
 steps:
-  - name: "Install kubectl"
-    type: Command
+  - name: Configure kubectl for OKE
     command: |
-      curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-      chmod +x kubectl
-      mv kubectl /usr/local/bin/
-      kubectl version --client  # Verify installation
+      export KUBECONFIG=/workspace/kubeconfig
+      oci ce cluster create-kubeconfig --cluster-id ocid1.cluster.oc1.ap-tokyo-1.aaaaaaaaxxdjx5bt2bvjgkigvzyqzgpc5tllrtkzmduybc44scgmghlvqbkq --file $HOME/.kube/config --region ap-tokyo-1 --token-version 2.0.0  --kube-endpoint PRIVATE_ENDPOINT
 
   - name: "Ensure Namespace Exists"
     type: Command
     command: |
-      kubectl get namespace ${K8S_NAMESPACE} || kubectl create namespace ${K8S_NAMESPACE}
+      kubectl create namespace ${K8S_NAMESPACE}
       echo "Waiting for namespace to be available..."
       sleep 5
 

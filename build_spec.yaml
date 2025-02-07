@@ -28,16 +28,16 @@ steps:
         timeoutInSeconds: 1200
         runAs: root
 
-      - type: Command
-        name: "Ensure Kubernetes Namespace Exists"
-        timeoutInSeconds: 120
-        command: |
-          if ! kubectl get namespace ${K8S_NAMESPACE} >/dev/null 2>&1; then
-            echo "Namespace ${K8S_NAMESPACE} not found. Creating..."
-            kubectl create namespace ${K8S_NAMESPACE}
-          else
-            echo "Namespace ${K8S_NAMESPACE} already exists."
-          fi
+  - type: Command
+    name: "Ensure Kubernetes Namespace Exists"
+    timeoutInSeconds: 120
+    command: |
+      if ! kubectl get namespace ${K8S_NAMESPACE} >/dev/null 2>&1; then
+        echo "Namespace ${K8S_NAMESPACE} not found. Creating..."
+        kubectl create namespace ${K8S_NAMESPACE}
+      else
+        echo "Namespace ${K8S_NAMESPACE} already exists."
+      fi
 
   - type: Command
     name: "Build container image"

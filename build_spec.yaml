@@ -6,6 +6,7 @@ shell: bash
 env:
   variables:
     key: "value"
+    K8S_NAMESPACE: "kmlbroker"  # Define your namespace here
 
   exportedVariables:
     - BUILDRUN_HASH
@@ -32,17 +33,29 @@ steps:
     runAs: root
     command: |
       cd frontend
-      docker build --pull --rm -t kmlbroker:${BUILDRUN_HASH} .
+      docker build --pull --rm -t nrt.ocir.io/nr7audjfcmkp/kmlbroker/kmlbroker:${BUILDRUN_HASH} .
       cd ..
 
       cd backend
-      docker build --pull --rm -t kmlbrokerbe:${BUILDRUN_HASH} .
+      docker build --pull --rm -t nrt.ocir.io/nr7audjfcmkp/kmlbroker/kmlbrokerbe:${BUILDRUN_HASH} .
       cd ..
+
+  - type: Command
+    name: "Deploy Kubernetes Resources"
+    timeoutInSeconds: 6000
+    command: |
+      echo "Deploying to Kubernetes in namespace ${K8S_NAMESPACE}..."
+      kubectl apply -f frontend-deployment.yaml -n ${K8S_NAMESPACE}
+      kubectl apply -f backend-deployment.yaml -n ${K8S_NAMESPACE}
+      kubectl apply -f service.yaml -n ${K8S_NAMESPACE}
+      kubectl apply -f ingress.yaml -n ${K8S_NAMESPACE}
+      kubectl apply -f hpa.yaml -n ${K8S_NAMESPACE}
+      kubectl apply -f secret.yaml -n ${K8S_NAMESPACE}
 
 outputArtifacts:
   - name: frontendImage
     type: DOCKER_IMAGE
-    location: kmlbroker:${BUILDRUN_HASH}
+    location: nrt.ocir.io/nr7audjfcmkp/kmlbroker/kmlbroker:${BUILDRUN_HASH}
   - name: backendImage
     type: DOCKER_IMAGE
-    location: kmlbrokerbe:${BUILDRUN_HASH}
+    location: nrt.ocir.io/nr7audjfcmkp/kmlbroker/kmlbrokerbe:${BUILDRUN_HASH}

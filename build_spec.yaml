@@ -18,24 +18,23 @@ steps:
     name: "Export variables"
     timeoutInSeconds: 40
     command: |
-      export BUILDRUN_HASH='echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7'
-      echo "BUILDRUN_HASH: " $BUILDRUN_HASH
+      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
+      echo "BUILDRUN_HASH": $BUILDRUN_HASH
     onFailure:
       - type: Command
         timeoutInSeconds: 40
-        command:
+        command: |
           echo "Handling Failure"
           echo "Failure successfully handled"
-        timeoutInSeconds: 400
         runAs: root
 
   - type: Command
-    timeoutInSeconds: 600
     name: "Install Prereqs"
+    timeoutInSeconds: 600
     command: |
       cd ${OCI_WORKSPACE_DIR}/node_express
-      # install nvm
-      curl -0- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+      # Install nvm
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
       export NVM_DIR="$HOME/.nvm"
       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
       nvm install lts/erbium

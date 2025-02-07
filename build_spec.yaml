@@ -13,7 +13,14 @@ env:
     - BUILDRUN_HASH
 
 steps:
-  - name: "Apply Namespace"
+  - name: "Ensure Namespace Exists"
+    type: Command
+    command: |
+      kubectl get namespace ${K8S_NAMESPACE} || kubectl create namespace ${K8S_NAMESPACE}
+      echo "Waiting for namespace to be available..."
+      sleep 5  # Give Kubernetes time to process
+
+  - name: "Apply Namespace YAML"
     type: Command
     command: kubectl apply -f namespace.yaml
 

@@ -45,12 +45,7 @@ steps:
     timeoutInSeconds: 6000
     command: |
       echo "Deploying to Kubernetes in namespace ${K8S_NAMESPACE}..."
-      kubectl apply -f frontend-deployment.yaml -n ${K8S_NAMESPACE}
-      kubectl apply -f backend-deployment.yaml -n ${K8S_NAMESPACE}
-      kubectl apply -f service.yaml -n ${K8S_NAMESPACE}
-      kubectl apply -f ingress.yaml -n ${K8S_NAMESPACE}
-      kubectl apply -f hpa.yaml -n ${K8S_NAMESPACE}
-      kubectl apply -f secret.yaml -n ${K8S_NAMESPACE}
+      kubectl apply -f manifest.yaml -n ${K8S_NAMESPACE}
 
 outputArtifacts:
   - name: frontendImage

@@ -25,9 +25,10 @@ steps:
       echo "Waiting for namespace to be available..."
       sleep 5
 
-  - name: "Apply Namespace YAML"
-    type: Command
-    command: kubectl apply -f namespace.yaml
+  - name: Apply Namespace YAML
+    command: |
+      export KUBECONFIG=/workspace/kubeconfig
+      kubectl apply -f namespace.yaml --validate=false
 
   - name: "Define Tagging"
     type: Command

@@ -12,14 +12,18 @@ env:
 # For this Build to run, the Build Pipeline needs to have a BUILDRUN_HASH
   exportedVariables:
    - BUILDRUN_HASH
+   - kmlbroker
 
 steps:
+  # Step 1: Export variables
   - type: Command
     name: "Export variables"
     timeoutInSeconds: 40
     command: |
       export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
-      echo "BUILDRUN_HASH": $BUILDRUN_HASH
+      export NAMESPACE="kmlbroker"  # Define your namespace here
+      echo "BUILDRUN_HASH: $BUILDRUN_HASH"
+      echo "NAMESPACE: $NAMESPACE"
     onFailure:
       - type: Command
         timeoutInSeconds: 40

@@ -13,6 +13,11 @@ env:
 
 steps:
   - type: Command
+  - name: "Create Namespace if Not Exists"
+    command: |
+      kubectl get namespace kmlbroker || kubectl create namespace kmlbroker
+
+  - type: Command
     name: "Define Tagging"
     timeoutInSeconds: 60
     command: |

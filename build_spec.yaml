@@ -15,7 +15,14 @@ env:
    - kmlbroker
 
 steps:
-  # Step 1: Export variables
+
+  - type: Command
+    name: "Create Kubernetes Namespace"
+    timeoutInSeconds: 60
+    command: |
+      kubectl create namespace kmlbroker --dry-run=client -o yaml | kubectl apply -f -
+      echo "Namespace 'kmlbroker' ensured."
+  
   - type: Command
     name: "Export variables"
     timeoutInSeconds: 40

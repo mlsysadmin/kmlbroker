@@ -4,41 +4,13 @@ timeoutInSeconds: 6000
 runAs: root
 shell: bash
 env:
-# these are local variables to the build config
   variables:
 
-# exportedVariables are made available to use as parameters
-# in sucessor Build Pipeline stages
-# For this Build to run, the Build Pipeline needs to have a BUILDRUN_HASH
   exportedVariables:
    - BUILDRUN_HASH
    - kmlbroker
 
 steps:
-
-  - type: Command
-    name: "Create Kubernetes Namespace"
-    timeoutInSeconds: 60
-    command: |
-      kubectl create namespace kmlbroker --dry-run=client -o yaml | kubectl apply -f -
-      echo "Namespace 'kmlbroker' ensured."
-  
-  - type: Command
-    name: "Export variables"
-    timeoutInSeconds: 40
-    command: |
-      export BUILDRUN_HASH=$(echo ${OCI_BUILD_RUN_ID} | rev | cut -c 1-7)
-      export NAMESPACE="kmlbroker"  # Define your namespace here
-      echo "BUILDRUN_HASH: $BUILDRUN_HASH"
-      echo "NAMESPACE: $NAMESPACE"
-    onFailure:
-      - type: Command
-        timeoutInSeconds: 40
-        command: |
-          echo "Handling Failure"
-          echo "Failure successfully handled"
-        runAs: root
-
   - type: Command
     name: "Install Prereqs"
     timeoutInSeconds: 600
